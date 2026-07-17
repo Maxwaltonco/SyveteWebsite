@@ -1,0 +1,32 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Claude Code tooling config — not part of the app, no need to clone it
+/.agents/
+/.claude/
+
+# stray CSV exports (e.g. ticket/lead exports) accidentally saved to project
+# root instead of wherever they're supposed to go — never belongs in source
+# control, especially once these contain real guest data
+/*.csv

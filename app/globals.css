@@ -1,0 +1,841 @@
+:root {
+  --radius: 16px;
+  --display: "Space Grotesk", ui-sans-serif, sans-serif;
+  --body: "Inter", ui-sans-serif, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 12.5px;
+  color: #9a9a9a;
+}
+
+.h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(44px, 8vw, 92px);
+  line-height: 0.98;
+  margin: 14px 0 8px;
+  letter-spacing: -0.01em;
+  color: #000000;
+}
+
+.h1 span {
+  color: #000000;
+}
+
+.h2 {
+  font-family: var(--display);
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0 0 28px;
+  color: #000000;
+}
+
+.sub {
+  font-size: 18px;
+  color: #444444;
+  max-width: 480px;
+  margin: 0 0 32px;
+}
+
+.fine-print {
+  font-size: 12.5px;
+  color: #9a9a9a;
+  margin-top: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Home (single-page ticket site) ---------- */
+.home-page {
+  min-height: 100vh; /* fallback for browsers without dvh support */
+  min-height: 100dvh;
+  background: #ffffff;
+  color: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px 24px 40px;
+  text-align: center;
+}
+
+.home-logo {
+  width: 196px;
+  max-width: 56vw;
+  height: auto;
+  margin-bottom: 16px;
+}
+
+/* Just a small extra nudge down from the logo — visual styling is shared
+   with .home-buy-btn/.btn-glossy so it matches Apply for Entry exactly. */
+.home-instagram-btn {
+  display: inline-block;
+  margin-top: 10px;
+  margin-bottom: 32px;
+  text-decoration: none;
+}
+
+/* Page-load reveal, stage 1: logo fades in alone. Plays once on mount. */
+.logo-reveal {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+  transition-delay: 80ms;
+}
+.logo-reveal.logo-reveal-in {
+  opacity: 1;
+}
+
+.home-eyebrow {
+  margin: 12px 0 4px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+}
+
+.home-location {
+  margin: 0 0 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.home-buy-btn {
+  padding: 8px 32px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.home-buy-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Shared glossy pill treatment for customer-facing buttons (iTunes/Web 2.0
+   style). Layout (padding/radius/size) stays on .home-buy-btn above; this
+   class owns fill, border, gloss highlight, and depth. */
+.btn-glossy {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  border: 1px solid #c9c9c9;
+  background: linear-gradient(to bottom, #fdfdfd, #e4e4e4);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  color: #1a1a1a;
+  transition: background 150ms ease-out, box-shadow 150ms ease-out;
+}
+/* Gloss highlight: a soft near-white layer over the top half, clipped to
+   the pill's own border-radius via the button's overflow:hidden. Sits at
+   z-index -1 so it paints above the button's own background but below
+   the text content. */
+.btn-glossy::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+  transition: background 150ms ease-out;
+}
+.btn-glossy:hover:not(:disabled) {
+  background: linear-gradient(to bottom, #ffffff, #e9e9e9);
+}
+.btn-glossy:hover:not(:disabled)::before {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+}
+.btn-glossy:active:not(:disabled) {
+  background: linear-gradient(to bottom, #d8d8d8, #f2f2f2);
+  box-shadow: none;
+}
+.btn-glossy:active:not(:disabled)::before {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0));
+}
+
+.home-error {
+  color: #c0392b;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+
+/* ---------- Info scrubber ---------- */
+.info-scrubber {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 0; /* lets this flex child actually shrink instead of being
+                    floored at its content's natural size */
+  flex-shrink: 1;
+  padding-bottom: 90px;
+}
+
+.panel-media {
+  width: 328px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.panel-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Page-load reveal, stage 2: central image resolves from a blur into focus.
+   Panel content itself now swaps instantly (no crossfade) when the active
+   panel changes — this wrapper only plays once, on initial mount. */
+.media-reveal {
+  opacity: 0.35;
+  filter: blur(14px);
+  transition: opacity 550ms ease-out, filter 550ms ease-out;
+  transition-delay: 280ms;
+}
+.media-reveal.media-reveal-in {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* Page-load reveal, stage 3: supporting text/button, plain opacity fade. */
+.text-reveal {
+  opacity: 0;
+  transition: opacity 350ms ease-out;
+  transition-delay: 455ms;
+}
+.text-reveal.text-reveal-in {
+  opacity: 1;
+}
+
+.panel-copy {
+  margin: 20px 0 0;
+  max-width: 300px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: #000000;
+}
+
+/* Matches .home-location's size/weight for panel headlines that should
+   read at the same visual weight as "Curated Yacht Party". */
+.panel-copy-lg {
+  max-width: none;
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Lead capture form (final panel). Copy's top margin matches the 20px
+   used by .home-eyebrow on the other panels, so the text lines up with
+   "ONLY 150 SPOTS" when switching between panels. */
+.lead-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lead-form .panel-copy {
+  margin-top: 20px;
+}
+.lead-form .home-buy-btn {
+  margin-top: 3.5px;
+}
+
+.lead-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 3.5px;
+  margin-bottom: 0;
+}
+
+.lead-input {
+  width: 220px;
+  max-width: 70vw;
+  padding: 7px 14px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #000000;
+  background: #ffffff;
+  outline: none;
+}
+.lead-input:focus {
+  border-color: #000000;
+}
+.lead-input:disabled {
+  opacity: 0.6;
+}
+
+.lead-success {
+  font-weight: 600;
+}
+
+/* Scrubber bar (fixed to bottom of viewport) */
+.scrubber-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 68px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 6px 12px;
+  touch-action: none;
+  z-index: 30;
+}
+
+/* Page-load reveal, stage 4a: the track itself fades/slides in. Safe to
+   animate opacity/transform directly on .scrubber-bar — nothing else
+   uses those properties on this element on an ongoing basis. */
+.scrubber-bar.track-reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 350ms ease-out, transform 350ms ease-out;
+  transition-delay: 460ms;
+}
+.scrubber-bar.track-reveal.track-reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Page-load reveal, stage 4b: tiles cascade in left to right. Wraps each
+   .scrubber-tick so this doesn't collide with the tick's own transform
+   (hover magnification) and outline transitions. */
+.tile-reveal {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0.75);
+  transition: opacity 350ms ease-out, transform 350ms ease-out;
+}
+.tile-reveal.tile-reveal-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.scrubber-tick {
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  outline: 1.75px solid transparent;
+  outline-offset: 4px;
+  transform-origin: bottom center;
+  /* Outline fade-out runs immediately; fade-in (below) is delayed by the
+     same duration so the old ring is fully gone before the new one starts
+     appearing — otherwise two adjacent rings are briefly visible at once. */
+  transition: transform 220ms ease-out, margin 220ms ease-out,
+    outline-color 200ms ease-out;
+}
+.scrubber-tick[aria-current="true"] {
+  outline-color: #000000;
+  transition: transform 220ms ease-out, margin 220ms ease-out,
+    outline-color 200ms ease-out 200ms;
+}
+.scrubber-tick svg {
+  display: block;
+}
+
+.tick-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.scroll-hint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: #9a9a9a;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* Page-load reveal, stage 4c: hint text fades in alongside the track. */
+.scroll-hint.hint-reveal {
+  opacity: 0;
+  transition: opacity 350ms ease-out;
+  transition-delay: 460ms;
+}
+.scroll-hint.hint-reveal.hint-reveal-in {
+  opacity: 1;
+}
+
+/* Fluid mobile sizing: everything from the logo down to the scrubber is
+   tied to vh instead of fixed px, so it scales down together on shorter
+   phones instead of overflowing the viewport. Desktop is untouched — these
+   rules only apply under 520px wide OR under 520px tall. The height leg
+   matters just as much as the width one: a landscape phone (e.g. 667x375,
+   812x375) is wider than 520px and would never match a width-only query,
+   even though it's exactly the short-viewport case this whole block
+   exists for. Placed after every base rule it overrides (same
+   specificity, so source order decides the winner — a media query
+   earlier in the file loses to a plain class rule later in the file,
+   regardless of the query matching).
+
+   Structural safety net: clamp() compression alone can't guarantee a fit
+   on every possible viewport shape, so .home-page is a bounded, scrollable
+   container (height + overflow-y), and the scrubber/scroll-hint are
+   pulled out of position:fixed into normal flow — pinned near the bottom
+   via flexbox auto-margins when there's room, and simply scrolled to
+   (never overlapped) when there isn't. Overlap is now structurally
+   impossible; scrolling a few px on an extreme viewport is the deliberate
+   fallback, not a bug. */
+@media (max-width: 520px), (max-height: 520px) {
+  .home-page {
+    height: 100dvh;
+    overflow-y: auto;
+    padding: clamp(6px, 2vh, 14px) 24px clamp(12px, 5vh, 40px);
+  }
+
+  .home-logo {
+    width: 140px;
+    margin-bottom: clamp(4px, 1.5vh, 12px);
+    flex-shrink: 0;
+  }
+
+  .home-instagram-btn {
+    margin-top: clamp(2px, 1vh, 10px);
+    margin-bottom: clamp(8px, 3vh, 24px);
+    flex-shrink: 0;
+  }
+
+  /* Grows to fill whatever space .home-page has left over, so the
+     scrubber-bar's margin-top: auto (below) has slack to push into and
+     ends up pinned near the bottom — same visual result as position:fixed
+     produced, but as a real flow participant instead of floating over it. */
+  .info-scrubber {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 10px;
+  }
+
+  .panel-media {
+    width: clamp(140px, 28vh, 320px);
+  }
+
+  .home-eyebrow {
+    margin: clamp(4px, 1.5vh, 12px) 0 clamp(1px, 0.5vh, 4px);
+  }
+
+  /* Same top gap as .home-eyebrow above — .panel-copy plays the same role
+     (first line under the image) on the lead-capture slide, so it needs
+     the same fluid compression or that slide's fields end up sitting
+     lower than every other slide's content on short viewports. */
+  .lead-form .panel-copy {
+    margin-top: clamp(4px, 1.5vh, 12px);
+  }
+
+  .home-location {
+    margin: 0 0 clamp(2px, 1vh, 10px);
+  }
+
+  .scrubber-bar {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    /* Consumes any slack in .info-scrubber to sit near the bottom; falls
+       back to 0 (immediately after the button, in normal flow) once
+       there's no slack left — that's the point where .home-page's own
+       scroll takes over instead of anything overlapping. */
+    margin-top: auto;
+    gap: 6px;
+  }
+  .scrubber-tick {
+    width: clamp(32px, 8vh, 52px);
+    height: clamp(32px, 8vh, 52px);
+    border-radius: 9px;
+  }
+  .scroll-hint {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin: 8px 0 0;
+    font-size: 10px;
+  }
+}
+
+/* ---------- Admin ---------- */
+.admin-shell {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--body);
+  padding: 40px 24px;
+}
+.admin-login {
+  max-width: 360px;
+  margin: 80px auto;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: var(--radius);
+  padding: 28px;
+}
+.admin-login input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--mono);
+  margin: 14px 0;
+}
+.admin-login button {
+  width: 100%;
+  padding: 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.admin-login button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stat-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.stat {
+  background: #f0f0f0;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-width: 140px;
+}
+.stat .num {
+  font-family: var(--mono);
+  font-size: 26px;
+  color: #000000;
+}
+.stat .label {
+  font-size: 12px;
+  color: #9a9a9a;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e5e5;
+  color: #9a9a9a;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e5e5;
+  vertical-align: middle;
+}
+tr.revoked td {
+  opacity: 0.4;
+}
+.badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.badge.valid,
+.badge.approved {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+.badge.pending,
+.badge.no {
+  background: #fff4e0;
+  color: #a5680a;
+}
+.badge.revoked {
+  background: #ececec;
+  color: #666666;
+}
+.badge.refunded {
+  background: #fbe9e7;
+  color: #a13f3f;
+}
+.revoke-btn,
+.export-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #000000;
+  background: transparent;
+  color: #000000;
+  cursor: pointer;
+}
+.revoke-btn:hover,
+.export-btn:hover {
+  background: #000000;
+  color: #ffffff;
+}
+.revoke-btn:disabled,
+.export-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.admin-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e5e5e5;
+}
+.admin-nav-link {
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 16px;
+  color: #666666;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.admin-nav-link:hover {
+  color: #000000;
+}
+.admin-nav-link.active {
+  color: #000000;
+  border-bottom-color: #000000;
+  font-weight: 600;
+}
+.copy-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 1px solid #000000;
+  background: transparent;
+  color: #000000;
+  cursor: pointer;
+}
+.copy-link-btn:hover {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* ---------- Quantity stepper (top of the Apply for Entry modal) ---------- */
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 16px;
+}
+.apply-qty-stepper {
+  justify-content: flex-start;
+  gap: 14px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+/* Border/background/color intentionally omitted — .btn-glossy (combined in
+   JSX) supplies the same gloss-pill fill/border/shadow used by every other
+   customer-facing button, this just keeps the round pill shape and sizing. */
+.qty-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.qty-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.qty-value {
+  min-width: 16px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Apply for Entry modal ---------- */
+.apply-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 200;
+}
+.apply-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: var(--radius);
+  padding: 32px 28px 28px;
+  text-align: left;
+}
+.apply-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: #f0f0f0;
+  color: #000000;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.apply-field-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.apply-input {
+  width: 100%;
+  max-width: none;
+}
+.apply-group-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+  margin: 0 0 8px;
+}
+.apply-attendee-group {
+  margin-bottom: 18px;
+}
+.apply-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #000000;
+  margin-bottom: 18px;
+  cursor: pointer;
+}
+.apply-checkbox-row input {
+  margin-top: 2px;
+}
+.apply-referral-row {
+  margin-bottom: 20px;
+}
+.apply-referral-invalid {
+  margin-top: 8px;
+}
+.apply-inline-link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #000000;
+  text-decoration: underline;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+.apply-submit-btn {
+  width: 100%;
+}
+.apply-price-note {
+  text-align: center;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+.apply-field-error {
+  color: #c0392b;
+  font-size: 12px;
+  margin: -4px 0 0;
+}
+.apply-modal-card--checkout {
+  max-width: 480px;
+}
+.apply-back-btn {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 13.5px;
+}
