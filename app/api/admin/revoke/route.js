@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "../../../../lib/stripe";
 import { getSupabaseAdmin } from "../../../../lib/supabase";
+import { sendApplicationRefundedEmail } from "../../../../lib/mailer";
 
 export async function POST(req) {
   const { ticketId, reason, refund } = await req.json();
@@ -56,6 +57,24 @@ export async function POST(req) {
 
     if (updateErr) {
       return NextResponse.json({ error: updateErr.message }, { status: 500 });
+    }
+
+    // "Revoke only" is a manual, no-email action by design — only the
+    // refund branch notifies the buyer. Attendee tickets have no email of
+    // their own (only the buyer row does), so fall back to the sibling
+    // buyer ticket in the same order when refunding someone else's ticket.
+    if (refund) {
+      let buyerEmail = ticket.email;
+      if (!buyerEmail && ticket.order_id) {
+        const { data: buyerTicket } = await supabase
+          .from("tickets")
+          .select("email")
+          .eq("order_id", ticket.order_id)
+          .is("attendee_name", null)
+          .maybeSingle();
+        buyerEmail = buyerTicket?.email;
+      }
+      await sendApplicationRefundedEmail({ ticketId: ticket.id, buyerEmail });
     }
 
     return NextResponse.json({ ok: true });

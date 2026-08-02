@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe, generateTicketCode } from "../../../lib/stripe";
 import { getSupabaseAdmin } from "../../../lib/supabase";
+import { sendPaymentReceivedEmail } from "../../../lib/mailer";
 
 // Stripe needs the raw request body to verify the signature.
 export async function POST(req) {
@@ -119,6 +120,16 @@ export async function POST(req) {
             reconciliation_note: `Ticket insert failed: ${insertError.message}. Stripe session ${session.id}, payment_intent ${fullSession.payment_intent}.`,
           })
           .eq("id", pendingOrder.id);
+      } else {
+        // Never blocks: sendPaymentReceivedEmail catches and logs its own
+        // failures rather than throwing, so a broken inbox can't undo the
+        // ticket creation that already succeeded above.
+        await sendPaymentReceivedEmail({
+          orderId: pendingOrder.id,
+          buyerEmail: pendingOrder.buyer_email,
+          ticketCodes: [buyerRow.ticket_code, ...attendeeRows.map((r) => r.ticket_code)],
+          totalPaidCents: fullSession.amount_total,
+        });
       }
     } catch (err) {
       // Payment succeeded and the order is claimed, but something after that
