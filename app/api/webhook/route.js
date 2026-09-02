@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStripe, generateTicketCode } from "../../../lib/stripe";
 import { getSupabaseAdmin } from "../../../lib/supabase";
 import { sendPaymentReceivedEmail } from "../../../lib/mailer";
+import { sendNewOrderTelegramAlert } from "../../../lib/telegram";
 
 // Stripe needs the raw request body to verify the signature.
 export async function POST(req) {
@@ -121,14 +122,21 @@ export async function POST(req) {
           })
           .eq("id", pendingOrder.id);
       } else {
-        // Never blocks: sendPaymentReceivedEmail catches and logs its own
-        // failures rather than throwing, so a broken inbox can't undo the
-        // ticket creation that already succeeded above.
+        // Never blocks: both of these catch and log their own failures
+        // rather than throwing, so a broken inbox or bot token can't undo
+        // the ticket creation that already succeeded above. The Telegram
+        // alert is in addition to the buyer's email, not instead of it.
         await sendPaymentReceivedEmail({
           orderId: pendingOrder.id,
           buyerEmail: pendingOrder.buyer_email,
           ticketCodes: [buyerRow.ticket_code, ...attendeeRows.map((r) => r.ticket_code)],
           totalPaidCents: fullSession.amount_total,
+        });
+        await sendNewOrderTelegramAlert({
+          buyerName: pendingOrder.buyer_name,
+          quantity,
+          totalPaidCents: fullSession.amount_total,
+          referralCode: pendingOrder.referral_code,
         });
       }
     } catch (err) {
