@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { getValidAttribution } from "../lib/attribution";
+import { useEventSettings } from "../lib/useEventSettings";
 import { isValidFullName, FULL_NAME_ERROR } from "../lib/validateName";
 import {
   storeCheckoutSession,
@@ -47,6 +48,7 @@ async function createCheckoutSession(payload) {
 }
 
 export default function ApplyModal({ open, onClose }) {
+  const EVENT = useEventSettings();
   const [draft] = useState(loadDraft);
 
   const [quantity, setQuantity] = useState(draft.quantity || 1);
@@ -60,6 +62,7 @@ export default function ApplyModal({ open, onClose }) {
   const [ageConfirmed, setAgeConfirmed] = useState(draft.ageConfirmed || false);
   const [referralCode, setReferralCode] = useState(draft.referralCode || "");
   const [referralInvalid, setReferralInvalid] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(0);
   const [buyerNameError, setBuyerNameError] = useState("");
   const [attendeeNameErrors, setAttendeeNameErrors] = useState([]);
 
@@ -260,6 +263,36 @@ export default function ApplyModal({ open, onClose }) {
     return () => clearTimeout(saveTimeoutRef.current);
   }, [quantity, buyerName, buyerEmail, buyerPhone, buyerInstagram, attendees, ageConfirmed, referralCode]);
 
+  // Live price reveal: debounce-check the referral code as it's typed so the
+  // displayed total updates the moment a valid code is recognized, without
+  // waiting for submit. Purely for display — doesn't touch referralInvalid,
+  // which still only fires on an actual submit attempt. seqRef guards
+  // against an earlier, slower check resolving after a newer one and
+  // clobbering the discount with stale data.
+  const referralSeqRef = useRef(0);
+  useEffect(() => {
+    const code = referralCode.trim();
+    if (!code) {
+      setDiscountPercent(0);
+      return;
+    }
+    const seq = ++referralSeqRef.current;
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/validate-referral?code=${encodeURIComponent(code)}`);
+        const data = await res.json();
+        if (referralSeqRef.current !== seq) return;
+        setDiscountPercent(data.valid ? data.discount_percent || 0 : 0);
+      } catch {
+        if (referralSeqRef.current === seq) setDiscountPercent(0);
+      }
+    }, SAVE_DEBOUNCE_MS);
+    return () => clearTimeout(timeout);
+  }, [referralCode]);
+
+  const unitPrice = Math.round(EVENT.priceAUD * (1 - discountPercent / 100));
+  const totalPrice = unitPrice * quantity;
+
   function updateAttendee(index, key, value) {
     setAttendees((prev) =>
       prev.map((a, i) => (i === index ? { ...a, [key]: value } : a))
@@ -432,7 +465,7 @@ export default function ApplyModal({ open, onClose }) {
           </>
         ) : (
           <>
-            <div className="eyebrow">Apply for Entry</div>
+            <div className="eyebrow">Apply for Ticket</div>
             <div className="qty-stepper apply-qty-stepper">
               <button
                 type="button"
@@ -558,6 +591,10 @@ export default function ApplyModal({ open, onClose }) {
                 )}
               </div>
 
+              <p className="apply-price-note">
+                ${unitPrice} {quantity}x = ${totalPrice}
+              </p>
+
               <button
                 type="submit"
                 className="home-buy-btn btn-glossy apply-submit-btn"
@@ -566,8 +603,8 @@ export default function ApplyModal({ open, onClose }) {
                 {submitting
                   ? "Processing…"
                   : checkoutPendingOrderId
-                  ? "Update and Continue"
-                  : "Continue"}
+                  ? "Update and Checkout"
+                  : "Checkout"}
               </button>
               {submitError && <p className="home-error">{submitError}</p>}
             </form>

@@ -468,7 +468,7 @@ function Dashboard() {
           Abandoned applications
         </h2>
         <p className="fine-print" style={{ marginTop: 8, marginBottom: 16 }}>
-          Started the "Apply for Entry" form but never completed payment —
+          Started the "Apply for Ticket" form but never completed payment —
           treat as a lead list.
         </p>
         {pendingOrders.length === 0 ? (

@@ -824,7 +824,10 @@ tr.revoked td {
 .apply-price-note {
   text-align: center;
   margin-top: 12px;
-  margin-bottom: 0;
+  margin-bottom: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 .apply-field-error {
   color: #c0392b;
