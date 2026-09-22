@@ -250,7 +250,7 @@ export default function InfoScrubber() {
             <p className="home-eyebrow">Only 150 Spots</p>
             <p className="home-location">Curated Yacht Party</p>
             <button className="home-buy-btn btn-glossy" onClick={openModal}>
-              Apply for Entry
+              Apply for Ticket
             </button>
           </>
         );
@@ -260,7 +260,7 @@ export default function InfoScrubber() {
             <p className="home-eyebrow">Something else is overdue.</p>
             <p className="home-location">Same Clubs. Every Weekend</p>
             <button className="home-buy-btn btn-glossy" onClick={openModal}>
-              Apply for Entry
+              Apply for Ticket
             </button>
           </>
         );
@@ -270,7 +270,7 @@ export default function InfoScrubber() {
             <p className="home-eyebrow">Music. Bar. Open water.</p>
             <p className="home-location">Finally, Something to Do</p>
             <button className="home-buy-btn btn-glossy" onClick={openModal}>
-              Apply for Entry
+              Apply for Ticket
             </button>
           </>
         );
@@ -280,7 +280,7 @@ export default function InfoScrubber() {
             <p className="home-eyebrow">Not Confirmed? Refunded in full.</p>
             <p className="home-location">Applications Reviewed</p>
             <button className="home-buy-btn btn-glossy" onClick={openModal}>
-              Apply for Entry
+              Apply for Ticket
             </button>
           </>
         );
