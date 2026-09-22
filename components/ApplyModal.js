@@ -21,6 +21,14 @@ const MAX_QTY = 6;
 // Created once at module scope (not per-render) per Stripe's own guidance.
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
 function loadDraft() {
   if (typeof window === "undefined") return {};
   try {
@@ -63,6 +71,10 @@ export default function ApplyModal({ open, onClose }) {
   const [referralCode, setReferralCode] = useState(draft.referralCode || "");
   const [referralInvalid, setReferralInvalid] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(0);
+  // Separate from discountPercent: some active codes are valid but carry no
+  // discount (pure referral tracking, e.g. 0% codes) — the tick means "this
+  // code is recognized," not "this code changed the price."
+  const [codeValid, setCodeValid] = useState(false);
   const [buyerNameError, setBuyerNameError] = useState("");
   const [attendeeNameErrors, setAttendeeNameErrors] = useState([]);
 
@@ -274,6 +286,7 @@ export default function ApplyModal({ open, onClose }) {
     const code = referralCode.trim();
     if (!code) {
       setDiscountPercent(0);
+      setCodeValid(false);
       return;
     }
     const seq = ++referralSeqRef.current;
@@ -283,15 +296,21 @@ export default function ApplyModal({ open, onClose }) {
         const data = await res.json();
         if (referralSeqRef.current !== seq) return;
         setDiscountPercent(data.valid ? data.discount_percent || 0 : 0);
+        setCodeValid(!!data.valid);
       } catch {
-        if (referralSeqRef.current === seq) setDiscountPercent(0);
+        if (referralSeqRef.current === seq) {
+          setDiscountPercent(0);
+          setCodeValid(false);
+        }
       }
     }, SAVE_DEBOUNCE_MS);
     return () => clearTimeout(timeout);
   }, [referralCode]);
 
+  const fullTotal = EVENT.priceAUD * quantity;
   const unitPrice = Math.round(EVENT.priceAUD * (1 - discountPercent / 100));
   const totalPrice = unitPrice * quantity;
+  const showDiscountStep = discountPercent > 0 && totalPrice !== fullTotal;
 
   function updateAttendee(index, key, value) {
     setAttendees((prev) =>
@@ -568,15 +587,22 @@ export default function ApplyModal({ open, onClose }) {
               </label>
 
               <div className="apply-referral-row">
-                <input
-                  placeholder="Referral code (optional)"
-                  className="lead-input apply-input"
-                  value={referralCode}
-                  onChange={(e) => {
-                    setReferralCode(e.target.value);
-                    setReferralInvalid(false);
-                  }}
-                />
+                <div className="apply-referral-input-wrap">
+                  <input
+                    placeholder="Referral code (optional)"
+                    className="lead-input apply-input"
+                    value={referralCode}
+                    onChange={(e) => {
+                      setReferralCode(e.target.value);
+                      setReferralInvalid(false);
+                    }}
+                  />
+                  {codeValid && (
+                    <span className="apply-referral-check" aria-label="Code applied">
+                      <CheckIcon />
+                    </span>
+                  )}
+                </div>
                 {referralInvalid && (
                   <p className="home-error apply-referral-invalid">
                     Affiliate code not recognized.{" "}
@@ -592,7 +618,15 @@ export default function ApplyModal({ open, onClose }) {
               </div>
 
               <p className="apply-price-note">
-                ${unitPrice} {quantity}x = ${totalPrice}
+                {showDiscountStep ? (
+                  <>
+                    <span className="apply-price-was">${fullTotal}</span>
+                    {" → "}
+                    <span className="apply-price-now">${totalPrice}</span>
+                  </>
+                ) : (
+                  <>${unitPrice} {quantity}x = ${totalPrice}</>
+                )}
               </p>
 
               <button

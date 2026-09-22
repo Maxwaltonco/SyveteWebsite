@@ -805,6 +805,21 @@ tr.revoked td {
 .apply-referral-row {
   margin-bottom: 20px;
 }
+.apply-referral-input-wrap {
+  position: relative;
+}
+.apply-referral-input-wrap .apply-input {
+  padding-right: 36px;
+}
+.apply-referral-check {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: #1e7e34;
+  display: flex;
+  pointer-events: none;
+}
 .apply-referral-invalid {
   margin-top: 8px;
 }
@@ -821,13 +836,25 @@ tr.revoked td {
 .apply-submit-btn {
   width: 100%;
 }
+/* Deliberately understated — same register as .eyebrow, not a bold
+   headline price. The checkout button is the call to action; this is
+   just quiet confirmation of what's about to be charged. */
 .apply-price-note {
-  text-align: center;
+  text-align: left;
   margin-top: 12px;
   margin-bottom: 12px;
-  font-size: 20px;
-  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #9a9a9a;
   font-variant-numeric: tabular-nums;
+}
+.apply-price-was {
+  text-decoration: line-through;
+}
+.apply-price-now {
+  color: #000000;
+  font-weight: 700;
 }
 .apply-field-error {
   color: #c0392b;
