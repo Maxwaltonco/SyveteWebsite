@@ -852,10 +852,6 @@ tr.revoked td {
 .apply-price-was {
   text-decoration: line-through;
 }
-.apply-price-now {
-  color: #000000;
-  font-weight: 700;
-}
 .apply-field-error {
   color: #c0392b;
   font-size: 12px;
