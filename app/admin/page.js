@@ -48,6 +48,35 @@ function buildGroupColorMap(tickets) {
   return colorMap;
 }
 
+// Keeps a group order's tickets sitting together in the list, instead of
+// scattering wherever each individual row's own created_at happens to fall
+// (e.g. a ticket added to an existing order later, or attendee rows with a
+// slightly different timestamp than the buyer's). Groups (and standalone
+// tickets) are still ordered newest-first overall, using the EARLIEST
+// created_at in each group as its sort key; within a group, the buyer row
+// (attendee_name null) leads, then guests in original creation order.
+function sortForDisplay(tickets) {
+  const groupEarliest = {};
+  tickets.forEach((t) => {
+    if (!t.order_id) return;
+    const ts = new Date(t.created_at).getTime();
+    if (groupEarliest[t.order_id] === undefined || ts < groupEarliest[t.order_id]) {
+      groupEarliest[t.order_id] = ts;
+    }
+  });
+
+  return [...tickets].sort((a, b) => {
+    const aKey = a.order_id ? groupEarliest[a.order_id] : new Date(a.created_at).getTime();
+    const bKey = b.order_id ? groupEarliest[b.order_id] : new Date(b.created_at).getTime();
+    if (aKey !== bKey) return bKey - aKey;
+    if (a.order_id && a.order_id === b.order_id) {
+      if (!a.attendee_name !== !b.attendee_name) return a.attendee_name ? 1 : -1;
+      return new Date(a.created_at) - new Date(b.created_at);
+    }
+    return 0;
+  });
+}
+
 function timeAgo(iso) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -83,7 +112,7 @@ function Dashboard() {
       cache: "no-store",
     });
     const data = await res.json();
-    setTickets(data.tickets || []);
+    setTickets(sortForDisplay(data.tickets || []));
     setPendingCount(data.pendingCount || 0);
     setApprovedCount(data.approvedCount || 0);
     setRevokedCount(data.revokedCount || 0);
